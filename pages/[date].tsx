@@ -1,4 +1,3 @@
-// pages/[date].tsx
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Button, Typography } from "@mui/material";
 import Layout from "../components/Layout";
@@ -48,16 +47,9 @@ const DatePage: React.FC<DatePageProps> = ({ apodData }) => {
 };
 
 export async function getStaticPaths() {
-  // Fetch the list of possible values for `[date]`
-  // For example, you might fetch all dates from your API
-  // This should return an array of objects with `params` key
   return {
-    paths: [
-      // Example:
-      { params: { date: "2024-01-17" } },
-      // Add more dates as needed
-    ],
-    fallback: false, // Set to `true` if you want to handle other dates dynamically
+    paths: [{ params: { date: "2024-01-17" } }],
+    fallback: false,
   };
 }
 
