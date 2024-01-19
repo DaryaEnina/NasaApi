@@ -1,7 +1,7 @@
-import { GetServerSideProps, NextPage } from "next";
+// pages/[date].tsx
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Button, Typography } from "@mui/material";
-import Layout from "../components/Layout.tsx";
+import Layout from "../components/Layout";
 import React from "react";
 
 interface ApodData {
@@ -17,7 +17,7 @@ interface DatePageProps {
 
 const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
-const DatePage: NextPage<DatePageProps> = ({ apodData }) => {
+const DatePage: React.FC<DatePageProps> = ({ apodData }) => {
   if (!apodData) {
     return <div>Loading...</div>;
   }
@@ -27,11 +27,7 @@ const DatePage: NextPage<DatePageProps> = ({ apodData }) => {
   return (
     <Layout>
       <Button
-        onClick={() => {
-          if (typeof window !== "undefined") {
-            window.history.back();
-          }
-        }}
+        onClick={() => window.history.back()}
         style={{
           display: "flex",
           alignItems: "center",
@@ -51,11 +47,23 @@ const DatePage: NextPage<DatePageProps> = ({ apodData }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<DatePageProps> = async ({
-  query,
-}) => {
-  const { date } = query;
-  const formattedDate = new Date(date as string);
+export async function getStaticPaths() {
+  // Fetch the list of possible values for `[date]`
+  // For example, you might fetch all dates from your API
+  // This should return an array of objects with `params` key
+  return {
+    paths: [
+      // Example:
+      { params: { date: "2024-01-17" } },
+      // Add more dates as needed
+    ],
+    fallback: false, // Set to `true` if you want to handle other dates dynamically
+  };
+}
+
+export async function getStaticProps({ params }) {
+  const { date } = params;
+  const formattedDate = new Date(date);
   const year = formattedDate.getFullYear();
   const month = (formattedDate.getMonth() + 1).toString().padStart(2, "0");
   const day = formattedDate.getDate().toString().padStart(2, "0");
@@ -79,6 +87,6 @@ export const getServerSideProps: GetServerSideProps<DatePageProps> = async ({
       apodData,
     },
   };
-};
+}
 
 export default DatePage;

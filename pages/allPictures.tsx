@@ -1,5 +1,5 @@
 import React, { useState, SyntheticEvent } from "react";
-import Layout from "../components/Layout.tsx";
+import Layout from "../components/Layout";
 import {
   Typography,
   TextField,

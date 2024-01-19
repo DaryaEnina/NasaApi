@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent } from "react";
 import { useRouter } from "next/router";
 import { Button, Paper, TextField, Typography, Box } from "@mui/material";
-import Layout from "../components/Layout.tsx";
+import Layout from "../components/Layout";
 
 interface ApodData {
   title: string;
