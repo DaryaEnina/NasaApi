@@ -1,20 +1,45 @@
-import { useState } from "react";
-import Layout from "../components/Layout";
+import React, { useState, ChangeEvent } from "react";
 import { useRouter } from "next/router";
 import { Button, Paper, TextField, Typography, Box } from "@mui/material";
+import Layout from "../components/Layout.tsx";
+
+interface ApodData {
+  title: string;
+  url: string;
+  explanation: string;
+  date: string;
+}
+
+interface HomeProps {
+  apodData: ApodData;
+}
 
 const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
-const Home = ({ apodData }) => {
+const Home: React.FC<HomeProps> = ({ apodData }) => {
   const { title, url, explanation, date } = apodData;
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const router = useRouter();
 
-  const handleDateChange = (event) => {
+  const handleDateChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setSelectedDate(event.target.value);
+    setError(""); // Сбрасываем ошибку при изменении даты
   };
 
-  const handleViewPicture = () => {
+  const handleViewPicture = (): void => {
+    if (!selectedDate) {
+      setError("Please select a date.");
+      return;
+    }
+    const selectedDateTime = new Date(selectedDate);
+    const currentDateTime = new Date();
+
+    if (selectedDateTime > currentDateTime) {
+      setError("Selected date cannot be greater than today.");
+      return;
+    }
+
     router.push(`/${selectedDate}`);
   };
 
@@ -40,14 +65,29 @@ const Home = ({ apodData }) => {
             type="date"
             value={selectedDate}
             label="Select a date:"
-            onChange={(e) => handleDateChange(e, "start")}
+            onChange={handleDateChange}
             InputLabelProps={{ shrink: true }}
-            InputProps={{ inputProps: { style: { fontSize: 16 } } }}
+            InputProps={{
+              inputProps: { style: { fontSize: 16, width: "200px" } },
+            }}
             style={{ width: "200px" }}
           />
+          {error && (
+            <Typography
+              variant="body2"
+              color="error"
+              style={{ marginTop: 4, width: "200px", textAlign: "center" }}
+            >
+              {error}
+            </Typography>
+          )}
           <Button
             variant="contained"
-            style={{ width: "200px", marginTop: "16px" }}
+            style={{
+              width: "200px",
+              marginTop: "16px",
+              backgroundColor: "#b200ff",
+            }}
             onClick={handleViewPicture}
           >
             View Picture
@@ -82,7 +122,7 @@ export async function getStaticProps() {
   const response = await fetch(
     `https://api.nasa.gov/planetary/apod?api_key=${apiKey}`
   );
-  const apodData = await response.json();
+  const apodData: ApodData = await response.json();
 
   return {
     props: {

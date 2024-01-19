@@ -1,5 +1,5 @@
-import { useState } from "react";
-import Layout from "../components/Layout";
+import React, { useState, SyntheticEvent } from "react";
+import Layout from "../components/Layout.tsx";
 import {
   Typography,
   TextField,
@@ -17,18 +17,34 @@ import {
   Container,
 } from "@mui/material";
 
+interface ApodData {
+  title: string;
+  url: string;
+  explanation: string;
+  date: string;
+  media_type: string;
+}
+
+interface AllPicturesPageProps {
+  apodDataList: ApodData[];
+}
+
 const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
-const AllPicturesPage = ({ apodDataList }) => {
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [fetchedApodDataList, setFetchedApodDataList] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [validationError, setValidationError] = useState(false);
-  const [selectedApodData, setSelectedApodData] = useState(null);
+const AllPicturesPage: React.FC<AllPicturesPageProps> = ({ apodDataList }) => {
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [fetchedApodDataList, setFetchedApodDataList] = useState<ApodData[]>(
+    []
+  );
+  const [loading, setLoading] = useState<boolean>(false);
+  const [validationError, setValidationError] = useState<boolean>(false);
+  const [selectedApodData, setSelectedApodData] = useState<ApodData | null>(
+    null
+  );
 
-  const handleDateChange = (e, type) => {
-    const value = e.target.value;
+  const handleDateChange = (e: SyntheticEvent, type: string): void => {
+    const value = (e.target as HTMLInputElement).value;
     if (type === "start") {
       setStartDate(value);
     } else {
@@ -36,18 +52,34 @@ const AllPicturesPage = ({ apodDataList }) => {
     }
   };
 
-  const fetchData = async () => {
+  const validateDates = (): boolean => {
     if (!startDate || !endDate) {
       setValidationError(true);
+      return false;
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+    if (startDate > today || endDate > today) {
+      setValidationError(true);
+      return false;
+    }
+
+    setValidationError(false);
+    return true;
+  };
+
+  const fetchData = async (): Promise<void> => {
+    if (!validateDates()) {
       return;
     }
-    setValidationError(false);
 
     setLoading(true);
 
-    const apiPromises = [];
+    const apiPromises: Promise<Response>[] = [];
     const currentDate = new Date(startDate);
     const lastDate = new Date(endDate);
+
+    setFetchedApodDataList([]);
 
     while (currentDate <= lastDate) {
       const formattedDate = currentDate.toISOString().split("T")[0];
@@ -61,7 +93,7 @@ const AllPicturesPage = ({ apodDataList }) => {
     }
 
     const responses = await Promise.all(apiPromises);
-    const newDataList = await Promise.all(
+    const newDataList: ApodData[] = await Promise.all(
       responses.map((response) => response.json())
     );
 
@@ -69,11 +101,11 @@ const AllPicturesPage = ({ apodDataList }) => {
     setLoading(false);
   };
 
-  const handleCardClick = (apodData) => {
+  const handleCardClick = (apodData: ApodData): void => {
     setSelectedApodData(apodData);
   };
 
-  const handleCloseDialog = () => {
+  const handleCloseDialog = (): void => {
     setSelectedApodData(null);
   };
 
@@ -114,7 +146,7 @@ const AllPicturesPage = ({ apodDataList }) => {
           variant="contained"
           onClick={fetchData}
           disabled={loading}
-          style={{ width: 200, marginBottom: 20 }}
+          style={{ width: 200, marginBottom: 20, backgroundColor: "#b200ff" }}
         >
           {loading ? (
             <CircularProgress size={24} color="inherit" />
@@ -128,7 +160,8 @@ const AllPicturesPage = ({ apodDataList }) => {
             color="error"
             style={{ marginBottom: 10 }}
           >
-            Please select both start and end dates.
+            Please select both start and end dates, and ensure they are not
+            greater than today.
           </Typography>
         )}
       </Container>
